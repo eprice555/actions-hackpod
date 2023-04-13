@@ -22,10 +22,7 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-
-      - name: Echo
-        run: echo "CD... image-tag ${{ inputs.image-tag }}"
-
+        
       # TODO:
       # Configure dynamic credentials to AWS, check out the action: aws-actions/configure-aws-credentials
       - name: Configure AWS Credentials
