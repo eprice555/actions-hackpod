@@ -54,7 +54,7 @@ jobs:
       # Perform static analysis against the CloudFormation template, check out the action: stelligent/cfn_nag@master
       - name: Cfn Nag
         id: cfn-nag
-      - uses: stelligent/cfn_nag@master
+        uses: stelligent/cfn_nag@master
         with:
           input_path: templates
           extra_args: -o sarif
