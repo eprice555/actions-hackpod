@@ -11,9 +11,10 @@ jobs:
 
   build-and-test:
     runs-on: ubuntu-latest
+    # These permissions are needed to interact with GitHub's OIDC Token endpoint.
     permissions:
-      id-token: write # need this for OIDC
-      contents: read 
+      id-token: write
+      contents: read
     environment: ${{ github.ref_name }} # need this to fetch variables and secrets
     outputs:
       image-tag: ${{ steps.set-image-tag.outputs.IMAGE_TAG }}
@@ -37,7 +38,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-region: ${{ vars.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
 
       # Lint the CloudFormation template (templates/), check out the action: scottbrenner/cfn-lint-action
       - name: Setup Cloud Formation Linter with Latest Version
