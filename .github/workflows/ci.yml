@@ -109,10 +109,8 @@ jobs:
         id: image-scan
         uses: alexjurkiewicz/ecr-scan-image@v1.7.1
         with:
-          repository: myorg/myimage
-          tag: v1.2.3
-          fail_threshold: high
-        
+          repository: ${{ vars.ECR_REPO_NAME }}
+          tag: latest
      
       # Create build summary output #https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
       - name: Summary
