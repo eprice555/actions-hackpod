@@ -29,7 +29,6 @@ jobs:
       # TODO:
       # Configure dynamic credentials to AWS, check out the action: aws-actions/configure-aws-credentials
       - name: Configure AWS Credentials
-        id: creds
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
