@@ -11,7 +11,12 @@ jobs:
 
   build-and-test:
     runs-on: ubuntu-latest
-
+    permissions:
+      id-token: write # need this for OIDC
+      contents: read
+      actions: read
+      security-events: write    
+    environment: ${{ github.ref_name }} # need this to fetch variables and secrets
     outputs:
       image-tag: ${{ steps.set-image-tag.outputs.IMAGE_TAG }}
 
