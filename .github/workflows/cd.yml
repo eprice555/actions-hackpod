@@ -9,13 +9,13 @@ on:
       image-tag:
         required: true
         type: string
-    outputs:
-      app_url:
-        description: "The ECS application URL"
-        value: ${{ jobs.deploy.outputs.app_url }}
-      app_ip:
-        description: "The ECS application public ip"
-        value: ${{ jobs.deploy.outputs.app_ip }}
+      outputs:
+        app_url:
+          description: "The ECS application URL"
+          value: ${{ jobs.deploy.outputs.app_url }}
+        app_ip:
+          description: "The ECS application public ip"
+          value: ${{ jobs.deploy.outputs.app_ip }}
 
 name: cd
 
@@ -58,48 +58,48 @@ jobs:
       
 
         # Update ECS task definition with the new image id / tag, check this action for idea: aws-actions/amazon-ecs-render-task-definition
-        - name: Login to Amazon ECR
-          id: login-ecr
-          uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-        - name: Download task definition
-          run: |
+      - name: Download task definition
+        run: |
             aws ecs describe-task-definition \
             --task-definition ${{ vars.APP_NAME }}-task-definition-family \
             --query taskDefinition > task-definition.json
 
-        - name: Fill in the new image ID in the Amazon ECS task definition
-          id: task-def
-          uses: aws-actions/amazon-ecs-render-task-definition@v1
-          with:
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
             task-definition: task-definition.json
             container-name: ${{ vars.APP_NAME }}
             image: "${{ steps.login-ecr.outputs.registry }}/${{ vars.ECR_REPO_NAME }}:${{ inputs.image-tag }}"
 
           # Deploy the new ECS task based on the new ECS task definition, check this action for idea: aws-actions/amazon-ecs-deploy-task-definition
-          - name: Deploy Amazon ECS task definition
-            uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-            with:
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
               task-definition: ${{ steps.task-def.outputs.task-definition }}
               service: ${{ env.ECS_SERVICE }}
               cluster: ${{ env.ECS_CLUSTER }}
               wait-for-service-stability: true
 
           # Get the Amplify app URL via ECS service elastic load balancer , create summary output
-          - name: Set App IP
-            id: set_app_ip
-            continue-on-error: true
-            run: |
+      - name: Set App IP
+        id: set_app_ip
+        continue-on-error: true
+        run: |
               TASK_ARN=$(aws ecs list-tasks --cluster "${ECS_CLUSTER}" --service-name "${ECS_SERVICE}" --query 'taskArns[0]' --output text)
               TASK_DETAILS=$(aws ecs describe-tasks --cluster "${ECS_CLUSTER}" --task "${TASK_ARN}" --query 'tasks[0].attachments[0].details')
               ENI=$(echo $TASK_DETAILS | jq -r '.[] | select(.name=="networkInterfaceId").value')
               PUBLIC_IP=$(aws ec2 describe-network-interfaces --network-interface-ids "${ENI}" --query 'NetworkInterfaces[0].Association.PublicIp' --output text)
               echo "app_ip=$PUBLIC_IP" >> $GITHUB_OUTPUT
 
-          - name: Set App URL
-            id: set_app_url
-            continue-on-error: true
-            run: |
+      - name: Set App URL
+        id: set_app_url
+        continue-on-error: true
+        run: |
               TARGET_GROUP_ARN=$(aws ecs describe-services --service "${ECS_SERVICE}" --cluster "${ECS_CLUSTER}" --query 'services[0].loadBalancers[0].targetGroupArn' --output text)
               LOAD_BALANCER_ARN=$(aws elbv2 describe-target-groups  --target-group-arns $TARGET_GROUP_ARN --query 'TargetGroups[0].LoadBalancerArns[0]' --output text)
               APP_URL=$(aws elbv2 describe-load-balancers --load-balancer-arns $LOAD_BALANCER_ARN --query 'LoadBalancers[0].DNSName' --output text)
