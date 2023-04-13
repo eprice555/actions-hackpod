@@ -34,11 +34,11 @@ jobs:
 
       # TODO:
       # Configure dynamic credentials to AWS, check out the action: aws-actions/configure-aws-credentials
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-region: ${{ vars.AWS_REGION }}
-        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
 
       # Lint the CloudFormation template (templates/), check out the action: scottbrenner/cfn-lint-action
       - name: Setup Cloud Formation Linter with Latest Version
@@ -106,11 +106,6 @@ jobs:
           echo "Pushed image $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
       # Scan the docker image in ECR, check out the action: alexjurkiewicz/ecr-scan-image for inspiration
-      - name: Set new image tag
-        id: set-image-tag
-        run: |
-          [[ -z $IMAGE_TAG ]] && echo "IMAGE_TAG=latest" >> $GITHUB_OUTPUT && echo "IMAGE_TAG=latest" >> $GITHUB_ENV || echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT && echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV 
-
       - name: ECR image scan
         id: image-scan
         uses: alexjurkiewicz/ecr-scan-image@v1.7.1
